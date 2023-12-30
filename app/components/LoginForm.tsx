@@ -4,6 +4,10 @@ import Link from "next/link";
 import { LoginInputs } from "../types/types";
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { signIn } from "../services/apiHandler";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { setUser } from "../rtk/userSlice";
 
 const LoginForm = () => {
   const {
@@ -11,13 +15,38 @@ const LoginForm = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<LoginInputs>();
-  const onSubmit: SubmitHandler<LoginInputs> = (data) => console.log(data);
+  const [error, setError] = useState("");
+  const router = useRouter();
+  const [userId, setUserId] = useState("");
+  const dispatch = useDispatch();
+  const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
+    const user = {
+      email: data.email,
+      password: data.password,
+    };
+    const res = await signIn(user);
+    if (res.status !== 200) {
+      setError(res.message);
+    } else {
+      setError("");
+      setUserId(res.data._id);
+      dispatch(setUser(res.data));
+    }
+  };
+  if (userId) {
+    router.push(`/home/profile/${userId}`);
+  }
   const [show, setShow] = useState(false);
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="max-w-md mx-auto mt-8 p-6  rounded-md shadow-md px-4  shadow-slate-400"
     >
+      {error && (
+        <span className="text-red-500 text-2xl text-center mt-1 mx-auto w-full block">
+          {error}
+        </span>
+      )}
       <label
         className="block text-gray-700 text-sm font-bold mb-2"
         htmlFor="email"

@@ -2,14 +2,13 @@ export type LoginInputs = {
   email: string;
   password: string;
 };
-export type SignupInputs = {
+export type SignUpInputs = {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
   dob: string;
   gender: string;
-  image: string;
 };
 export type UserType = {
   firstName: string;
@@ -39,4 +38,8 @@ export type SignUp = {
         gender: any;
         image: string;
       }>;
+};
+export type MenuTypes = {
+  title: string;
+  list: string[];
 };
