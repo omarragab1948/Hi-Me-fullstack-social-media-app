@@ -28,7 +28,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "app/components/LoginForm.tsx",
-    "app/utils/db.js"
+    "app/utils/db.js",
+    "app/rtk/ReduxProvider.js"
   ],
   "exclude": ["node_modules"]
 }

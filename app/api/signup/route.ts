@@ -1,31 +1,53 @@
 import connectionHandler from "@/app/utils/db";
 import { SignUp } from "../../types/types";
-import cloudinary from "cloudinary";
+import User from "@/app/utils/models";
+import bcrypt from "bcryptjs"; //
+import uploadImage from "@/app/utils/firebaseUploader";
 
-export const POST = async (request: SignUp) => {
+export const POST = async (request: any) => {
   connectionHandler();
+  const body = await request.formData();
+  const firstName = body.get("firstName");
+  const lastName = body.get("lastName");
+  const email = body.get("email");
+  const password = body.get("password");
+  const gender = body.get("gender");
+  const image = body.get("image");
+  const dob = body.get("dob");
 
-  const { firstName, lastName, email, password, dob, gender, image } =
-    await request.json();
-  // const cloudinaryResponse = await cloudinary.v2.uploader.upload(image, {
-  //   folder: "your_upload_folder",
-  //   // Other Cloudinary upload options can be added here
-  // });
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(email)) {
+    return Response.json({ message: "Invalid email address", status: 400 });
+  }
+
+  const existUser = await User.findOne({ email: email });
+  if (existUser) {
+    return Response.json({ message: "User already exists", status: 400 });
+  }
+
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  const uploaded = await uploadImage(image);
   const user = {
     firstName,
     lastName,
     email,
-    password,
+    password: hashedPassword,
     dob,
     gender,
-    image,
+    profileImage: uploaded,
+    coverImage: "",
+    friends: [],
+    uploadedImages: [],
+    posts: [],
+    about: {},
   };
 
-  console.log(user);
-
+  const createdUser = await User.create(user);
   const response = Response.json({
-    data: user,
-    message: "user created",
+    data: createdUser,
+    message: "User created",
     status: 200,
   });
   return response;
